@@ -21,6 +21,17 @@ app.post("/users", async (req, res) => {
   });
   res.status(201).json(req.body);
 });
+
+//Buscar usuário específico
+app.get("/users/:id", async (req, res) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: req.params.id,
+    },
+  });
+  res.status(200).json(user);
+});
+
 //Buscar Usuários
 app.get("/users", async (req, res) => {
   let users = [];
@@ -43,7 +54,7 @@ app.get("/users", async (req, res) => {
 app.put("/users/:id", async (req, res) => {
   console.log(req);
   await prisma.user.update({
-    where: {  
+    where: {
       id: req.params.id,
     },
     data: {
