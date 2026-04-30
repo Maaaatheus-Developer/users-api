@@ -21,7 +21,9 @@ router.post("/users", async (req, res) => {
         password: hashPassword,
       },
     });
-    res.status(201).json(user);
+    res.status(201).json({
+      message: "Usuário criado com sucesso",
+    });
   } catch (err) {
     res
       .status(500)
@@ -33,6 +35,9 @@ router.post("/login", async (req, res) => {
   try {
     //Busca o usuário no banco de dados
     const userInfo = req.body;
+    if (!userInfo.email || !userInfo.password) {
+      return res.status(400).json({ message: "Preencha todos os campos" });
+    }
     const user = await prisma.user.findUnique({
       where: { email: userInfo.email },
     });
@@ -48,7 +53,7 @@ router.post("/login", async (req, res) => {
 
     //Compare as senha do banco com a que o usuário digitou
     if (!isMatch) {
-      return res.status(400).json({ message: "Senha inválida" });
+      return res.status(401).json({ message: "Senha inválida" });
     }
 
     //Gerar o token JWT
@@ -59,7 +64,13 @@ router.post("/login", async (req, res) => {
       JWT_SECRET,
       { expiresIn: "1H" },
     );
-    res.status(200).json(token);
+    res.status(200).json(token, {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+    });
   } catch (err) {
     res
       .status(500)
